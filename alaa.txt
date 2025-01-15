@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPTCHA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .captcha-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+            margin: 20px auto;
+        }
+
+        .captcha-grid img {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: border 0.3s;
+        }
+
+        .captcha-grid img.selected {
+            border-color: #007bff;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #000; 
+            color: #fff;
+        }
+
+        button:hover {
+            background-color: #333; 
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Prove You Are Not a Human:  <span id="category"></span></h1>
+        <div class="captcha-grid" id="captcha-grid"></div>
+        <div class="button-container">
+            <button onclick="verifySelection()">Verify</button>
+            <button onclick="refreshCaptcha()">Refresh</button>
+        </div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const images = {
+            street: ['s1.jpg', 's2.jpg', 's3.jpg'],
+            trees: ['t1.jpg', 't2.jpg', 't3.jpg'],
+            stairs: ['st1.jpg', 'st2.jpg', 'st3.jpg']
+        };
+
+        let currentCategory;
+        let correctImages = [];
+        let selectedImages = [];
+
+        function loadCaptcha() {
+            const categories = Object.keys(images);
+            currentCategory = categories[Math.floor(Math.random() * categories.length)];
+            correctImages = images[currentCategory];
+            selectedImages = [];
+
+            document.getElementById('category').textContent = currentCategory;
+
+            const allImages = Object.values(images).flat();
+            const shuffledImages = allImages.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('captcha-grid');
+            grid.innerHTML = '';
+
+            shuffledImages.forEach(image => {
+                const img = document.createElement('img');
+                img.src = `images/${image}`;
+                img.alt = image;
+                img.onclick = () => toggleSelection(image, img);
+                grid.appendChild(img);
+            });
+        }
+
+        function toggleSelection(image, imgElement) {
+            if (selectedImages.includes(image)) {
+                selectedImages = selectedImages.filter(item => item !== image);
+                imgElement.classList.remove('selected');
+            } else {
+                selectedImages.push(image);
+                imgElement.classList.add('selected');
+            }
+        }
+
+        function verifySelection() {
+            const resultElement = document.getElementById('result');
+            const correctSet = new Set(correctImages);
+            const selectedSet = new Set(selectedImages);
+
+            if (selectedSet.size !== correctSet.size || ![...selectedSet].every(img => correctSet.has(img))) {
+                resultElement.textContent = 'Verification failed. Please try again.';
+                resultElement.style.color = 'red';
+            } else {
+                resultElement.textContent = 'Verification successful!';
+                resultElement.style.color = 'green';
+            }
+        }
+
+        function refreshCaptcha() {
+            loadCaptcha();
+            document.getElementById('result').textContent = '';
+        }
+
+       
+        loadCaptcha();
+    </script>
+</body>
+</html>
